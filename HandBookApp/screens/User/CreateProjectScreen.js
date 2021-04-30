@@ -1,23 +1,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Alert } from "react-native";
+import { FlatList } from "react-native";
 import {
   TextInput,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ActivityIndicator, Image } from "react-native";
 import { Icon, Tab, Overlay, Button } from "react-native-elements";
+
 import RNPickerSelect from "react-native-picker-select";
+
+//Import Components
+import ImageSelector from "../../compoenents/imageSelector";
+import DeleteButton from "../../compoenents/DeleteButton";
 
 const CreateProjectScreen = (props) => {
   //useState
-  const [order, setorder] = useState(0);
+  const [refresh, setrefresh] = useState(false);
   const [currentPage, setcurrentPage] = useState(0);
   const [projectPages, setprojectPages] = useState([]);
   const [visible, setVisible] = useState(false);
+  //Adding Text Components
   const [NewComponentType, setNewComponentType] = useState();
   const [NewComponentText, setNewComponentText] = useState("");
+  //Adding Image Component
+  const [imageTaken, setimageTaken] = useState();
   //get params
   const projectName = props.navigation.getParam("projectName");
   const projectType = props.navigation.getParam("projectType");
@@ -38,10 +47,31 @@ const CreateProjectScreen = (props) => {
     console.log(projectPages);
   }
 
+  const createNextPage = (nextPage) => {
+    const newPage = projectPages[0].projectPages[nextPage];
+    if (newPage == null) {
+      projectPages[0].projectPages.push({
+        pageNumber: nextPage,
+        pageContent: [],
+      });
+    }
+  };
+
   //Handle the selected tab value
   const handleTabSelect = (selected) => {
     if (selected == 1) {
       toggleOverlay();
+    } else if (selected == 2) {
+      const nextPage = currentPage + 1;
+      createNextPage(nextPage);
+      setcurrentPage(nextPage);
+    } else if (selected == 0) {
+      if (currentPage != 0) {
+        const lastPage = currentPage - 1;
+        setcurrentPage(lastPage);
+      } else {
+        Alert.alert("Your on the last page", "The only ways up");
+      }
     }
   };
 
@@ -50,19 +80,51 @@ const CreateProjectScreen = (props) => {
     setVisible(!visible);
   };
 
+  //Handle when image has being selected
+  const imageTakenHandler = (imagePath) => {
+    setimageTaken(imagePath);
+  };
+
+  const onDelete = (id) => {
+    Alert.alert(
+      "Are you sure you want to delete",
+      "you will lose this component",
+      [
+        {
+          text: "YES",
+          onPress: () => {
+            projectPages[0].projectPages[currentPage].pageContent.splice(id, 1);
+            setrefresh(true);
+            console.log("=--------------------------=");
+            console.log(projectPages);
+            setrefresh(false);
+          },
+          style: "cancel",
+        },
+        {
+          text: "NO",
+        },
+      ]
+    );
+  };
+
   const handlerSubmitComponent = () => {
-    let nextOrder = order + 1;
-    setorder(order + 1);
+    const id = projectPages[0].projectPages[currentPage].pageContent.length;
     projectPages[0].projectPages[currentPage].pageContent.push({
-      orderNum: nextOrder,
+      id: id,
       contentType: NewComponentType,
-      content: NewComponentText,
+      content: NewComponentType == "Image" ? imageTaken : NewComponentText,
     });
+    toggleOverlay();
     console.log(projectPages);
   };
 
   const handleNewComponentType = () => {
-    if (NewComponentType == "Text") {
+    if (
+      NewComponentType == "Text" ||
+      NewComponentType == "Title" ||
+      NewComponentType == "Subtitle"
+    ) {
       return (
         <TouchableWithoutFeedback
           onPress={() => {
@@ -74,6 +136,25 @@ const CreateProjectScreen = (props) => {
             keyboardVerticalOffset={100}
             style={styles.background}
           >
+            <View style={{ borderWidth: 1, height: "9%" }}>
+              <RNPickerSelect
+                onValueChange={(value) => setNewComponentType(value)}
+                items={[
+                  { label: "Adding Title", value: "Title" },
+                  { label: "Adding Subtitle", value: "Subtitle" },
+                  { label: "Adding text", value: "Text" },
+                ]}
+                style={{
+                  ...pickerSelectStyles,
+                  placeholder: {
+                    color: "purple",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                  },
+                }}
+              />
+            </View>
+
             <View>
               <TextInput
                 style={{
@@ -96,79 +177,145 @@ const CreateProjectScreen = (props) => {
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       );
+    } else if (NewComponentType == "Image") {
+      return (
+        <ImageSelector
+          onImageTake={(imageuri) => imageTakenHandler(imageuri)}
+        />
+      );
     } else if (NewComponentType == null) {
     }
   };
 
+  let listdata = projectPages[0].projectPages[currentPage].pageContent;
+
   return (
     <View>
-      <View style={styles.newContent}>
-        <Overlay overlayStyle={styles.overlayStyle} isVisible={visible}>
-          <View style={styles.overlayStyleInput}>
-            <Text
-              style={{ marginTop: 20, fontWeight: "bold", marginBottom: 15 }}
-            >
-              What are you adding?
-            </Text>
-            <View style={{ borderWidth: 1, height: "9%" }}>
-              <RNPickerSelect
-                onValueChange={(value) => setNewComponentType(value)}
-                items={[
-                  { label: "Adding Text", value: "Text" },
-                  { label: "Adding Image", value: "Image" },
-                  { label: "Adding Video", value: "Video" },
-                ]}
-                style={{
-                  ...pickerSelectStyles,
-                  placeholder: {
-                    color: "purple",
-                    fontSize: 12,
-                    fontWeight: "bold",
-                  },
-                }}
-              />
-            </View>
-            <View>{handleNewComponentType()}</View>
-          </View>
-          <View style={styles.ButtonContainer}>
-            <Button
-              buttonStyle={{ width: 130 }}
-              title="Submit"
-              type="solid"
-              onPress={handlerSubmitComponent}
-            />
-            <Button
-              buttonStyle={{ width: 130, backgroundColor: "red" }}
-              title="Cancel"
-              type="solid"
-              onPress={() => {
-                Alert.alert(
-                  "Are you sure?",
-                  "This will delete your hard work",
-                  [
-                    {
-                      text: "YES",
-                      onPress: () => {
-                        toggleOverlay();
-                      },
-                      style: "cancel",
-                    },
-                    {
-                      text: "NO",
-                    },
-                  ]
-                );
+      <Overlay overlayStyle={styles.overlayStyle} isVisible={visible}>
+        <View style={styles.overlayStyleInput}>
+          <Text style={{ marginTop: 20, fontWeight: "bold", marginBottom: 15 }}>
+            What are you adding?
+          </Text>
+          <View style={{ borderWidth: 1, height: "9%" }}>
+            <RNPickerSelect
+              onValueChange={(value) => setNewComponentType(value)}
+              items={[
+                { label: "Adding Text", value: "Text" },
+                { label: "Adding Image", value: "Image" },
+                { label: "Adding Video", value: "Video" },
+              ]}
+              style={{
+                ...pickerSelectStyles,
+                placeholder: {
+                  color: "purple",
+                  fontSize: 12,
+                  fontWeight: "bold",
+                },
               }}
             />
           </View>
-        </Overlay>
+          <View>{handleNewComponentType()}</View>
+        </View>
+        <View style={styles.ButtonContainer}>
+          <Button
+            buttonStyle={{ width: 130 }}
+            title="Submit"
+            type="solid"
+            onPress={handlerSubmitComponent}
+          />
+          <Button
+            buttonStyle={{ width: 130, backgroundColor: "red" }}
+            title="Cancel"
+            type="solid"
+            onPress={() => {
+              Alert.alert("Are you sure?", "This will delete your hard work", [
+                {
+                  text: "YES",
+                  onPress: () => {
+                    toggleOverlay();
+                  },
+                  style: "cancel",
+                },
+                {
+                  text: "NO",
+                },
+              ]);
+            }}
+          />
+        </View>
+      </Overlay>
+      <View style={styles.newContent}>
+        {
+          <FlatList
+            keyExtractor={(item) => item.key}
+            style={{ margin: 5 }}
+            data={listdata}
+            renderItem={(itemData) => {
+              const contenttype = itemData.item.contentType;
+              if (
+                contenttype == "Text" ||
+                contenttype == "Title" ||
+                contenttype == "Subtitle"
+              ) {
+                if (contenttype == "Title") {
+                  return (
+                    <View style={styles.newComponentView}>
+                      <Text
+                        style={{ fontSize: 25, fontWeight: "bold" }}
+                        selectable
+                      >
+                        {itemData.item.content}
+                      </Text>
+                      <DeleteButton onDelete={() => onDelete(itemData.index)} />
+                    </View>
+                  );
+                }
+                if (contenttype == "Subtitle") {
+                  return (
+                    <View style={styles.newComponentView}>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontWeight: "bold",
+
+                          textAlign: "center",
+                        }}
+                        selectable
+                      >
+                        {itemData.item.content}
+                      </Text>
+                      <DeleteButton onDelete={() => onDelete(itemData.index)} />
+                    </View>
+                  );
+                }
+                if (contenttype == "Text") {
+                  return (
+                    <View style={styles.newComponentView}>
+                      <Text selectable>{itemData.item.content}</Text>
+                      <DeleteButton onDelete={() => onDelete(itemData.index)} />
+                    </View>
+                  );
+                }
+              } else if (contenttype == "Image") {
+                return (
+                  <View style={styles.imagePreview}>
+                    <Image
+                      source={{ uri: itemData.item.content }}
+                      style={styles.image}
+                    />
+                    <DeleteButton onDelete={() => onDelete(itemData.index)} />
+                  </View>
+                );
+              }
+            }}
+          />
+        }
       </View>
 
-      <View>
-        <Text>This is where the main content will go </Text>
-      </View>
       <View style={styles.navOptions}>
-        <Text>Page {currentPage + 1}</Text>
+        <Text>
+          Page {currentPage + 1} / {projectPages[0].projectPages.length}
+        </Text>
         <Tab onChange={(num) => handleTabSelect(num)}>
           <Tab.Item
             icon={
@@ -209,7 +356,9 @@ CreateProjectScreen.navigationOptions = (navData) => {
   };
   const title = navData.navigation.getParam("projectName");
   return {
-    headerTitle: <Text>Project name: {title}</Text>,
+    headerTitle: () => {
+      return <Text>Project name: {title}</Text>;
+    },
     headerLeft: () => {
       return (
         <Icon
@@ -230,6 +379,18 @@ const styles = StyleSheet.create({
   newContent: {
     height: "82%",
     justifyContent: "flex-start",
+  },
+  image: {
+    marginTop: 20,
+    width: "100%",
+    height: "100%",
+  },
+  imagePreview: {
+    height: 300,
+    marginVertical: 5,
+  },
+  newComponentView: {
+    marginTop: 5,
   },
   navOptions: {
     alignItems: "center",
