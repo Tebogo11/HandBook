@@ -17,8 +17,6 @@ import { useSelector, useDispatch } from "react-redux";
 const ConfigProject = (props) => {
   const [projectName, setprojectName] = useState("");
   const [projectType, setprojectType] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState();
-  const dispatch = useDispatch();
 
   const CreateNewProject = () => {
     console.log("Create New Project ");

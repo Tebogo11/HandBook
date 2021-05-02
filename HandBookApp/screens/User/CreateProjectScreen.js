@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { StyleSheet, Text, View, ActivityIndicator, Image } from "react-native";
 import { Icon, Tab, Overlay, Button } from "react-native-elements";
-
+import uuid from "react-native-uuid";
 import RNPickerSelect from "react-native-picker-select";
 
 //Import Components
@@ -24,7 +24,7 @@ const CreateProjectScreen = (props) => {
   const [visible, setVisible] = useState(false);
   //Adding Text Components
   const [NewComponentType, setNewComponentType] = useState();
-  const [NewComponentText, setNewComponentText] = useState("");
+  const [NewComponentText, setNewComponentText] = useState();
   //Adding Image Component
   const [imageTaken, setimageTaken] = useState();
   //get params
@@ -33,6 +33,8 @@ const CreateProjectScreen = (props) => {
 
   if (projectPages.length === 0) {
     const newProject = {
+      projectID: uuid.v4(),
+      ownerID: "u1",
       projectName: projectName,
       projectType: projectType,
       submitted: false,
@@ -47,6 +49,25 @@ const CreateProjectScreen = (props) => {
     console.log(projectPages);
   }
 
+  //Sends data to Saveproject screen where the user can submit their project
+  const handleDoneRequest = () => {
+    const pagesCount = projectPages[0].projectPages.length;
+    const pageContentCount = projectPages[0].projectPages[0].pageContent.length;
+    if (pagesCount == 1 && pageContentCount == 0) {
+      Alert.alert("Please add some content before your submit ");
+    } else {
+      const data = { data: projectPages[0] };
+      props.navigation.navigate("SaveProject", {
+        project: { ...data },
+      });
+    }
+  };
+
+  useEffect(() => {
+    props.navigation.setParams({ submit: handleDoneRequest });
+  }, [projectPages]);
+
+  //Create the next page
   const createNextPage = (nextPage) => {
     const newPage = projectPages[0].projectPages[nextPage];
     if (newPage == null) {
@@ -109,14 +130,22 @@ const CreateProjectScreen = (props) => {
   };
 
   const handlerSubmitComponent = () => {
-    const id = projectPages[0].projectPages[currentPage].pageContent.length;
-    projectPages[0].projectPages[currentPage].pageContent.push({
-      id: id,
-      contentType: NewComponentType,
-      content: NewComponentType == "Image" ? imageTaken : NewComponentText,
-    });
-    toggleOverlay();
-    console.log(projectPages);
+    if (
+      (NewComponentType != undefined && imageTaken != undefined) ||
+      NewComponentText != undefined
+    ) {
+      projectPages[0].projectPages[currentPage].pageContent.push({
+        contentID: uuid.v4(),
+        contentType: NewComponentType,
+        content: NewComponentType == "Image" ? imageTaken : NewComponentText,
+      });
+      toggleOverlay();
+      setNewComponentType();
+
+      console.log(projectPages);
+    } else {
+      Alert.alert("You need a value for all current field");
+    }
   };
 
   const handleNewComponentType = () => {
@@ -247,7 +276,7 @@ const CreateProjectScreen = (props) => {
       <View style={styles.newContent}>
         {
           <FlatList
-            keyExtractor={(item) => item.key}
+            keyExtractor={(item) => item.contentID}
             style={{ margin: 5 }}
             data={listdata}
             renderItem={(itemData) => {
@@ -354,7 +383,9 @@ CreateProjectScreen.navigationOptions = (navData) => {
       },
     ]);
   };
+
   const title = navData.navigation.getParam("projectName");
+  const submit = navData.navigation.getParam("submit");
   return {
     headerTitle: () => {
       return <Text>Project name: {title}</Text>;
@@ -367,6 +398,17 @@ CreateProjectScreen.navigationOptions = (navData) => {
           size={45}
           color="black"
           onPress={cancel}
+        />
+      );
+    },
+    headerRight: () => {
+      return (
+        <Icon
+          name="done"
+          type="materialicons "
+          size={45}
+          color="black"
+          onPress={submit}
         />
       );
     },

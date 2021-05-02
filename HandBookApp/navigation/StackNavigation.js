@@ -4,6 +4,7 @@ import ReadProjectScreen from "../screens/Projects/ReadProjectScreen";
 //Import Creating a Project
 import CreateProject from "../screens/User/CreateProjectScreen";
 import ConfigProjectScreen from "../screens/User/ConfigProject";
+import SaveProjectScreen from "../screens/User/SaveProject";
 //Admin
 import UserProjects from "../screens/User/UserProjects";
 import EditProject from "../screens/User/EditProjectScreen";
@@ -18,6 +19,7 @@ export const HomeStack = createStackNavigator({
 export const CreateProjectStack = createStackNavigator({
   ConfigScreen: ConfigProjectScreen,
   Create: CreateProject,
+  SaveProject: SaveProjectScreen,
 });
 
 CreateProjectStack.navigationOptions = ({ navigation }) => {
