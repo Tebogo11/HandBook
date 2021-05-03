@@ -52,7 +52,6 @@ const BottomTabNav = createBottomTabNavigator({
       tabBarIcon: (tabInfo) => {
         return <Octicons name="diff-added" size={24} color="black" />;
       },
-      tabBarVisible: false,
     },
   },
   UserScreen: {
@@ -65,4 +64,15 @@ const BottomTabNav = createBottomTabNavigator({
   },
 });
 
-export default createAppContainer(BottomTabNav);
+const AuthNavigation = createStackNavigator({
+  Auth: AuthScreen,
+});
+
+//Doest allow you to go back
+const MainNavigator = createSwitchNavigator({
+  StartUp: StartUpScreen,
+  Auth: AuthNavigation,
+  Main: BottomTabNav,
+});
+
+export default createAppContainer(MainNavigator);

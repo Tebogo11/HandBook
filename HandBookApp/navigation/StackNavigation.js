@@ -16,15 +16,33 @@ export const HomeStack = createStackNavigator({
   ReadProject: ReadProjectScreen,
 });
 
+HomeStack.navigationOptions = ({ navigation }) => {
+  let tabBarVisible = true;
+  if (navigation.state.index == 1) {
+    tabBarVisible = false;
+  }
+  return {
+    tabBarVisible,
+  };
+};
+
 export const CreateProjectStack = createStackNavigator({
   ConfigScreen: ConfigProjectScreen,
-  Create: CreateProject,
-  SaveProject: SaveProjectScreen,
+  Create: {
+    screen: CreateProject,
+    navigationOptions: { gestureDirection: "vertical" },
+  },
+  SaveProject: {
+    screen: SaveProjectScreen,
+    navigationOptions: {
+      gestureDirection: "horizontal",
+    },
+  },
 });
 
 CreateProjectStack.navigationOptions = ({ navigation }) => {
   let tabBarVisible = true;
-  if (navigation.state.index > 0) {
+  if (navigation.state.index >= 1) {
     tabBarVisible = false;
   }
   return {

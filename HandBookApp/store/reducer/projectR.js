@@ -1,5 +1,5 @@
 import Project from "../../modal/Project";
-import { CREATE_PROJECT } from "../action/projectA";
+import { CREATE_PROJECT, SET_PROJECTS } from "../action/projectA";
 const initialState = {
   availableProjects: [],
   userProjects: [],
@@ -19,7 +19,11 @@ export default (state = initialState, action) => {
         availableProjects: state.availableProjects.concat(arrayProject),
         userProjects: state.userProjects.concat(arrayProject),
       };
+    case SET_PROJECTS:
+      return {
+        availableProjects: action.projects,
+        userProjects: action.userProjects,
+      };
   }
-  console.log(state.availableProjects);
   return state;
 };

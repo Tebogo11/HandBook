@@ -7,18 +7,32 @@ import { Provider } from "react-redux";
 import ReduxThunk from "redux-thunk";
 //Redux Store
 import projectReducer from "./store/reducer/projectR.js";
+import authReducer from "./store/reducer/authR";
 import BottomTabNav from "./navigation/MainNavigation";
+import { enableScreens } from "react-native-screens";
+
+import NavigationCon from "./navigation/NavContainer";
+
+//FireBase config
+import ApiKeys from "./constants/ApiKeys";
+import * as firebase from "firebase";
+
+enableScreens();
 
 const rootReducer = combineReducers({
   Project: projectReducer,
+  auth: authReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk));
 
 export default function App() {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(ApiKeys.FirebaseConfig);
+  }
   return (
     <Provider store={store}>
-      <BottomTabNav />
+      <NavigationCon />
     </Provider>
   );
 }

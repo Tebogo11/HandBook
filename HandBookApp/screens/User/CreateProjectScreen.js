@@ -52,10 +52,12 @@ const CreateProjectScreen = (props) => {
   //Sends data to Saveproject screen where the user can submit their project
   const handleDoneRequest = () => {
     const pagesCount = projectPages[0].projectPages.length;
+
     const pageContentCount = projectPages[0].projectPages[0].pageContent.length;
     if (pagesCount == 1 && pageContentCount == 0) {
       Alert.alert("Please add some content before your submit ");
     } else {
+      console.log(projectPages[0]);
       const data = { data: projectPages[0] };
       props.navigation.navigate("SaveProject", {
         project: { ...data },
@@ -423,7 +425,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   image: {
-    marginTop: 20,
     width: "100%",
     height: "100%",
   },
@@ -432,7 +433,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   newComponentView: {
-    marginTop: 5,
+    marginVertical: 20,
   },
   navOptions: {
     alignItems: "center",

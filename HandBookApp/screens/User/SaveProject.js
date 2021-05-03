@@ -2,6 +2,13 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Input, Button } from "react-native-elements";
 import { useDispatch } from "react-redux";
+import * as firebase from "firebase";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 
 //redux action
 import * as projectAction from "../../store/action/projectA";
@@ -10,6 +17,8 @@ const SaveProject = (props) => {
   const [project, setproject] = useState();
   const [projectName, setprojectName] = useState();
   const [projectType, setprojectType] = useState();
+  const [currentPageCount, setcurrentPageCount] = useState(0);
+  const [currentPageContent, setcurrentPageContent] = useState(0);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -30,10 +39,97 @@ const SaveProject = (props) => {
   };
 
   const saveProject = () => {
-    const newProject = project;
-    dispatch(projectAction.creatingProjects(newProject));
-    props.navigation.navigate("ConfigScreen");
-    props.navigation.navigate("Home");
+    uploadImagesToServer(project);
+  };
+
+  const uploadImagesToServer = async (newproject) => {
+    let currentPage = 0;
+    let currentContent = 0;
+    const item = newproject.projectPages;
+    const pageLength = newproject.projectPages.length;
+    const pageContentLength =
+      newproject.projectPages[pageLength - 1].pageContent.length;
+    console.log(newproject);
+    let endKeyOne = false;
+    let endKeyTwo = false;
+    item.forEach((item, index) => {
+      currentPage = index;
+      console.log(index);
+
+      item.pageContent.forEach((item, ContentIndex) => {
+        currentContent = ContentIndex;
+        console.log(ContentIndex);
+
+        if (item.contentType == "Image") {
+          //store content to firebase Store
+
+          uploadImage(
+            item.content,
+            item.ContentID,
+            currentPage,
+            currentContent,
+            endKeyOne,
+            endKeyTwo
+          );
+        }
+      });
+    });
+  };
+
+  const uploadImage = async (
+    uri,
+    imageName,
+    currentPage,
+    currentContent,
+    endKeyOne,
+    endKeyTwo
+  ) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const uploadTask = firebase
+      .storage()
+      .ref()
+      .child("images/" + imageName)
+      .put(blob);
+
+    let imageurl;
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED: // or 'paused'
+            console.log("Upload is paused");
+            break;
+          case firebase.storage.TaskState.RUNNING: // or 'running'
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        //handle error
+      },
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          console.log("File available at", downloadURL);
+
+          project.projectPages[currentPage].pageContent[
+            currentContent
+          ].content = downloadURL;
+
+          const end =
+            project.projectPages[currentPage].pageContent[currentContent + 1];
+          if (end == undefined) {
+            dispatch(projectAction.creatingProjects(project));
+            props.navigation.navigate("ConfigScreen");
+            props.navigation.navigate("Home");
+          }
+        });
+      }
+    );
   };
 
   return (
