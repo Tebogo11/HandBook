@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
+import { useSelector } from "react-redux";
 import { StyleSheet, Text, View, ActivityIndicator, Image } from "react-native";
 import { Icon, Tab, Overlay, Button } from "react-native-elements";
 import uuid from "react-native-uuid";
@@ -31,10 +32,12 @@ const CreateProjectScreen = (props) => {
   const projectName = props.navigation.getParam("projectName");
   const projectType = props.navigation.getParam("projectType");
 
+  const userID = useSelector((state) => state.auth.userId);
+
   if (projectPages.length === 0) {
     const newProject = {
       projectID: uuid.v4(),
-      ownerID: "u1",
+      ownerID: userID,
       projectName: projectName,
       projectType: projectType,
       submitted: false,

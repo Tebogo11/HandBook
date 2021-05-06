@@ -67,23 +67,14 @@ const SaveProject = (props) => {
             item.content,
             item.ContentID,
             currentPage,
-            currentContent,
-            endKeyOne,
-            endKeyTwo
+            currentContent
           );
         }
       });
     });
   };
 
-  const uploadImage = async (
-    uri,
-    imageName,
-    currentPage,
-    currentContent,
-    endKeyOne,
-    endKeyTwo
-  ) => {
+  const uploadImage = async (uri, imageName, currentPage, currentContent) => {
     const response = await fetch(uri);
     const blob = await response.blob();
     const uploadTask = firebase
@@ -120,9 +111,10 @@ const SaveProject = (props) => {
             currentContent
           ].content = downloadURL;
 
+          const endOfPage = project.projectPages[currentPage + 1];
           const end =
             project.projectPages[currentPage].pageContent[currentContent + 1];
-          if (end == undefined) {
+          if (end == undefined && endOfPage == undefined) {
             dispatch(projectAction.creatingProjects(project));
             props.navigation.navigate("ConfigScreen");
             props.navigation.navigate("Home");

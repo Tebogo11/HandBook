@@ -49,7 +49,7 @@ export const fetchProjects = () => {
         loadedProjects.push({
           ownerID: resData[key].ownerID,
           projectID: resData[key].projectID,
-          peojectName: resData[key].projectName,
+          projectName: resData[key].projectName,
           projectPages: resData[key].projectPages,
           projectType: resData[key].projectType,
           submitted: resData[key].submitted,
