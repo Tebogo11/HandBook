@@ -11,5 +11,5 @@ https://docs.expo.io/workflow/android-studio-emulator/
 The last option, follows the same steps as option option 1, but after you run npm start and the barcode is printed out, you look at the very bottom of the terminal script and you will see commands like “press a : android”. This option allows you to run the application on an emulator, Follow these link for IOS: https://docs.expo.io/workflow/ios-simulator/ . and this link for Android: https://docs.expo.io/workflow/android-studio-emulator/
 
 
-GitHub Repo: 
-Expo link https://docs.expo.io/workflow/android-studio-emulator/
+#### GitHub Repo: 
+#### Expo link https://docs.expo.io/workflow/android-studio-emulator/
