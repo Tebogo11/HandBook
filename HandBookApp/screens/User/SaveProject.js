@@ -59,7 +59,9 @@ const SaveProject = (props) => {
       item.pageContent.forEach((item, ContentIndex) => {
         currentContent = ContentIndex;
         console.log(ContentIndex);
-
+        const endOfPage = project.projectPages[currentPage + 1];
+        const end =
+          project.projectPages[currentPage].pageContent[currentContent + 1];
         if (item.contentType == "Image") {
           //store content to firebase Store
 
@@ -69,6 +71,10 @@ const SaveProject = (props) => {
             currentPage,
             currentContent
           );
+        } else if (end == undefined && endOfPage == undefined) {
+          dispatch(projectAction.creatingProjects(project));
+          props.navigation.navigate("ConfigScreen");
+          props.navigation.navigate("Home");
         }
       });
     });
@@ -106,20 +112,19 @@ const SaveProject = (props) => {
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
           console.log("File available at", downloadURL);
-
           project.projectPages[currentPage].pageContent[
             currentContent
           ].content = downloadURL;
-
-          const endOfPage = project.projectPages[currentPage + 1];
-          const end =
-            project.projectPages[currentPage].pageContent[currentContent + 1];
-          if (end == undefined && endOfPage == undefined) {
-            dispatch(projectAction.creatingProjects(project));
-            props.navigation.navigate("ConfigScreen");
-            props.navigation.navigate("Home");
-          }
         });
+
+        const endOfPage = project.projectPages[currentPage + 1];
+        const end =
+          project.projectPages[currentPage].pageContent[currentContent + 1];
+        if (end == undefined && endOfPage == undefined) {
+          dispatch(projectAction.creatingProjects(project));
+          props.navigation.navigate("ConfigScreen");
+          props.navigation.navigate("Home");
+        }
       }
     );
   };

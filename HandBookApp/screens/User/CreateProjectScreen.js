@@ -433,10 +433,12 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     height: 300,
-    marginVertical: 5,
+    marginVertical: 20,
+    padding: 20,
   },
   newComponentView: {
     marginVertical: 20,
+    padding: 10,
   },
   navOptions: {
     alignItems: "center",

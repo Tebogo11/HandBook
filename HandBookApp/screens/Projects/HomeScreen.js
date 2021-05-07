@@ -69,6 +69,7 @@ const HomeScreen = (props) => {
       <StatusBar />
       <View style={styles.list}>
         <FlatList
+          inverted={true}
           refreshControl={
             <RefreshControl
               onRefresh={loadProjects}
