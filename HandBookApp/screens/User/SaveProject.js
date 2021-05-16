@@ -111,10 +111,7 @@ const SaveProject = (props) => {
       },
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-          console.log("File available at", downloadURL);
-          project.projectPages[currentPage].pageContent[
-            currentContent
-          ].content = downloadURL;
+          console.log(downloadURL);
         });
 
         const endOfPage = project.projectPages[currentPage + 1];
